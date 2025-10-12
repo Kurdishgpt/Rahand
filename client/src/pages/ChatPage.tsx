@@ -12,7 +12,7 @@ export default function ChatPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, t } = useLanguage();
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -23,47 +23,100 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage]);
     setIsGenerating(true);
 
-    setTimeout(() => {
-      const getDemoResponse = (question: string, lang: Language): string => {
-        const lower = question.toLowerCase();
-        
-        if (lang === "en") {
-          if (lower.includes("kurdish culture") || lower.includes("culture")) {
-            return "Kurdish culture is rich and diverse, with a history spanning thousands of years. It includes vibrant traditions in music, dance, literature, and art. Kurdish people celebrate festivals like Newroz (New Year) and have a strong oral storytelling tradition. The Kurdish language has several dialects, with Sorani (Central Kurdish) and Kurmanji being the most widely spoken.";
+    const assistantMessageId = (Date.now() + 1).toString();
+    let accumulatedContent = "";
+
+    try {
+      const conversationHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...conversationHistory, { role: "user", content }],
+          language
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("No reader available");
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") {
+              setIsGenerating(false);
+              break;
+            }
+
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.content) {
+                accumulatedContent += parsed.content;
+                
+                setMessages((prev) => {
+                  const existing = prev.find(m => m.id === assistantMessageId);
+                  if (existing) {
+                    return prev.map(m =>
+                      m.id === assistantMessageId
+                        ? { ...m, content: accumulatedContent }
+                        : m
+                    );
+                  } else {
+                    return [
+                      ...prev,
+                      {
+                        id: assistantMessageId,
+                        role: "assistant" as const,
+                        content: accumulatedContent,
+                        timestamp: new Date(),
+                      },
+                    ];
+                  }
+                });
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
           }
-          if (lower.includes("voice") || lower.includes("features")) {
-            return "To use voice features, click the microphone button next to the input field. You can speak in either English or Kurdish, and the AI will transcribe and respond to your message. The system supports Kurdish Central (Sorani) text-to-speech for natural voice responses.";
-          }
-          if (lower.includes("hello") || lower.includes("hi")) {
-            return "Hello! I'm your AI assistant with Kurdish and English language support. I can help you with conversations, answer questions, and even generate images. How can I assist you today?";
-          }
-          return `I understand you're asking about: "${question}". I'm here to help with conversations in both Kurdish Central and English, as well as generate images based on your descriptions. What would you like to know more about?`;
-        } else {
-          if (lower.includes("کلتوور") || lower.includes("culture")) {
-            return "کلتووری کوردی دەوڵەمەند و فرەڕەنگە، مێژوویەکی بە هەزاران ساڵی هەیە. نەریتە زیندووەکانی لە مۆزیک، سەما، ئەدەبیات و هونەردا دەگرێتەوە. گەلی کورد جەژنەکانی وەک نەورۆز (ساڵی نوێ) ئاهەنگ دەگرن و نەریتێکی بەهێزی چیرۆکگێڕانەی دەمکی هەیە.";
-          }
-          if (lower.includes("دەنگ") || lower.includes("voice")) {
-            return "بۆ بەکارهێنانی تایبەتمەندی دەنگ، کرتە لە دوگمەی مایکرۆفۆن بکە لەتەنیشت خانەی نووسین. دەتوانیت بە کوردی یان ئینگلیزی قسە بکەیت، و AI پەیامەکەت دەنووسێتەوە و وەڵامت دەداتەوە.";
-          }
-          if (lower.includes("سڵاو") || lower.includes("بەخێربێ")) {
-            return "سڵاو! من یاریدەدەری AI ـم بە پشتگیری زمانی کوردی و ئینگلیزی. دەتوانم یارمەتیت بدەم لە گفتوگۆکاندا، وەڵامی پرسیارەکان بدەمەوە، و تەنانەت وێنە دروست بکەم. چۆن دەتوانم یارمەتیت بدەم؟";
-          }
-          return `تێدەگەم کە پرسیارت دەکەیت دەربارەی: "${question}". من لێرەم بۆ یارمەتیدان لە گفتوگۆکاندا بە کوردی ناوەندی و ئینگلیزی، هەروەها دروستکردنی وێنە بەپێی وەسفەکانت. چی دەتەوێت زیاتر بزانیت؟`;
         }
-      };
-      
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: getDemoResponse(content, language),
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantMessageId,
+          role: "assistant",
+          content: language === "en" 
+            ? "Sorry, I encountered an error. Please try again."
+            : "ببورە، هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵ بدەرەوە.",
+          timestamp: new Date(),
+        },
+      ]);
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
-  const handleGenerateImage = (prompt: string) => {
+  const handleGenerateImage = async (prompt: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -74,18 +127,44 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage]);
     setIsGenerating(true);
 
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
+      }
+
+      const { imageUrl } = await response.json();
+      
       const imageMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: language === "en" ? "Generated image" : "وێنەی دروستکراو",
         type: "image",
-        imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+        imageUrl,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, imageMessage]);
+    } catch (error) {
+      console.error("Image generation error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: language === "en"
+            ? "Failed to generate image. Please try again."
+            : "نەتوانرا وێنە دروست بکرێت. تکایە دووبارە هەوڵ بدەرەوە.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   return (
