@@ -25,8 +25,9 @@ export function useTextToSpeech({
   }, []);
 
   const speak = useCallback((text: string) => {
-    if (!window.speechSynthesis) {
-      onError?.("Text-to-speech is not supported in this browser");
+    if (!("speechSynthesis" in window)) {
+      const errorMsg = "Text-to-speech is not supported in this browser";
+      onError?.(errorMsg);
       return;
     }
 

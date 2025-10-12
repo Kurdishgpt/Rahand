@@ -19,6 +19,9 @@ export default function ChatPage() {
 
   const { isSpeaking, speak, stop } = useTextToSpeech({
     language,
+    onError: (error) => {
+      setAutoPlayTTS(false);
+    },
   });
 
   const handleSendMessage = async (content: string) => {
