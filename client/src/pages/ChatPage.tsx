@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChatMessage as ChatMessageComponent, Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { EmptyState } from "@/components/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX } from "lucide-react";
 
 type Language = "en" | "ku";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [autoPlayTTS, setAutoPlayTTS] = useState(false);
   const { language, t } = useLanguage();
+  const lastAssistantMessageRef = useRef<string>("");
+
+  const { isSpeaking, speak, stop } = useTextToSpeech({
+    language,
+  });
 
   const handleSendMessage = async (content: string) => {
     const userMessage: Message = {
@@ -64,6 +73,9 @@ export default function ChatPage() {
             const data = line.slice(6);
             if (data === "[DONE]") {
               setIsGenerating(false);
+              if (autoPlayTTS && accumulatedContent) {
+                speak(accumulatedContent);
+              }
               break;
             }
 
@@ -172,24 +184,43 @@ export default function ChatPage() {
       {messages.length === 0 ? (
         <EmptyState onSuggestedPrompt={handleSendMessage} />
       ) : (
-        <ScrollArea className="flex-1 px-4 py-6">
-          <div className="max-w-4xl mx-auto">
-            {messages.map((msg) => (
-              <ChatMessageComponent key={msg.id} message={msg} />
-            ))}
-            {isGenerating && (
-              <ChatMessageComponent
-                message={{
-                  id: "temp",
-                  role: "assistant",
-                  content: t("thinking"),
-                  timestamp: new Date(),
-                }}
-                isStreaming
-              />
-            )}
+        <>
+          <div className="border-b p-2 flex justify-end">
+            <Button
+              size="sm"
+              variant={autoPlayTTS ? "default" : "ghost"}
+              onClick={() => {
+                setAutoPlayTTS(!autoPlayTTS);
+                if (isSpeaking) {
+                  stop();
+                }
+              }}
+              data-testid="button-tts-toggle"
+              className="gap-2"
+            >
+              {autoPlayTTS ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              {language === "en" ? "Auto-play" : "خۆکارانە"}
+            </Button>
           </div>
-        </ScrollArea>
+          <ScrollArea className="flex-1 px-4 py-6">
+            <div className="max-w-4xl mx-auto">
+              {messages.map((msg) => (
+                <ChatMessageComponent key={msg.id} message={msg} />
+              ))}
+              {isGenerating && (
+                <ChatMessageComponent
+                  message={{
+                    id: "temp",
+                    role: "assistant",
+                    content: t("thinking"),
+                    timestamp: new Date(),
+                  }}
+                  isStreaming
+                />
+              )}
+            </div>
+          </ScrollArea>
+        </>
       )}
       
       <ChatInput
