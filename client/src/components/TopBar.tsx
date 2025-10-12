@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Moon, Sun, Languages, Home } from "lucide-react";
+import { Moon, Sun, Home } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Link } from "wouter";
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
 
   return (
     <header className="flex items-center justify-between p-3 border-b bg-background sticky top-0 z-10">
@@ -18,7 +18,7 @@ export function TopBar() {
             variant="ghost"
             size="icon"
             data-testid="button-home"
-            title={t("home")}
+            title={language === "en" ? "Home" : "ماڵەوە"}
           >
             <Home className="h-5 w-5" />
           </Button>
@@ -27,13 +27,21 @@ export function TopBar() {
       
       <div className="flex items-center gap-2">
         <Button
-          variant="ghost"
-          size="icon"
+          variant={language === "en" ? "default" : "outline"}
           onClick={toggleLanguage}
-          data-testid="button-language"
-          title={language === "en" ? t("kurdish") : t("english")}
+          data-testid="button-language-english"
+          className="min-w-[80px]"
         >
-          <Languages className="h-5 w-5" />
+          English
+        </Button>
+        
+        <Button
+          variant={language === "ku" ? "default" : "outline"}
+          onClick={toggleLanguage}
+          data-testid="button-language-kurdish"
+          className="min-w-[80px]"
+        >
+          کوردی
         </Button>
         
         <Button
@@ -41,7 +49,7 @@ export function TopBar() {
           size="icon"
           onClick={toggleTheme}
           data-testid="button-theme"
-          title={theme === "dark" ? t("lightMode") : t("darkMode")}
+          title={theme === "dark" ? (language === "en" ? "Light Mode" : "دۆخی ڕووناک") : (language === "en" ? "Dark Mode" : "دۆخی تاریک")}
         >
           {theme === "dark" ? (
             <Sun className="h-5 w-5" />
