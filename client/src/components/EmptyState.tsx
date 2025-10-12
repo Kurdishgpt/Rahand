@@ -1,6 +1,6 @@
 import { MessageSquare, Mic, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "./LanguageProvider";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface EmptyStateProps {
   onSuggestedPrompt: (prompt: string) => void;

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Moon, Sun, Languages } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
-import { useLanguage } from "./LanguageProvider";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();

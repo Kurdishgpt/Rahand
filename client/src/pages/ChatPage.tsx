@@ -3,7 +3,7 @@ import { ChatMessage as ChatMessageComponent, Message } from "@/components/ChatM
 import { ChatInput } from "@/components/ChatInput";
 import { EmptyState } from "@/components/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useLanguage } from "@/components/LanguageProvider";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MessageSquare, Settings } from "lucide-react";
-import { useLanguage } from "./LanguageProvider";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Conversation {
   id: string;
