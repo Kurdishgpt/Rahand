@@ -1,4 +1,4 @@
-import { MessageSquare, Mic, ImageIcon } from "lucide-react";
+import { MessageSquare, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -19,11 +19,6 @@ export function EmptyState({ onSuggestedPrompt }: EmptyStateProps) {
       icon: Mic, 
       text: t("suggestedPrompt2"),
       originalText: language === "en" ? "How can I use voice features?" : "چۆن دەتوانم تایبەتمەندی دەنگ بەکاربهێنم؟"
-    },
-    { 
-      icon: ImageIcon, 
-      text: t("suggestedPrompt3"),
-      originalText: language === "en" ? "Generate a beautiful landscape" : "دیمەنێکی جوان دروست بکە"
     },
   ];
 
