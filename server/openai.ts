@@ -1,7 +1,6 @@
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function streamChatCompletion(
   messages: Array<{ role: "user" | "assistant" | "system"; content: string }>,
@@ -10,11 +9,11 @@ export async function streamChatCompletion(
   onError: (error: Error) => void
 ) {
   try {
-    const stream = await openai.chat.completions.create({
-      model: "gpt-5",
+    const stream = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       messages,
       stream: true,
-      max_completion_tokens: 8192,
+      max_tokens: 8192,
     });
 
     for await (const chunk of stream) {
@@ -49,10 +48,10 @@ export async function generateImage(prompt: string): Promise<string> {
 export async function getChatCompletion(
   messages: Array<{ role: "user" | "assistant" | "system"; content: string }>
 ): Promise<string> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-5",
+  const response = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
     messages,
-    max_completion_tokens: 8192,
+    max_tokens: 8192,
   });
 
   return response.choices[0].message.content || "";
