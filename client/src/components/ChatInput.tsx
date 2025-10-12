@@ -4,6 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { VoiceButton, VoiceState } from "./VoiceButton";
 import { Send, Image as ImageIcon } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -15,7 +17,30 @@ export function ChatInput({ onSendMessage, onGenerateImage, disabled }: ChatInpu
   const [message, setMessage] = useState("");
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [isImageMode, setIsImageMode] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { toast } = useToast();
+
+  const { isListening, startListening, stopListening } = useSpeechRecognition({
+    language,
+    onResult: (transcript) => {
+      setMessage(transcript);
+      toast({
+        description: language === "en" 
+          ? `Recognized: ${transcript}` 
+          : `گوێگیرا: ${transcript}`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        description: language === "en" 
+          ? `Voice error: ${error}` 
+          : `هەڵەی دەنگ: ${error}`,
+      });
+    },
+  });
+
+  const effectiveVoiceState: VoiceState = isListening ? "listening" : voiceState;
 
   const handleSend = () => {
     if (message.trim()) {
@@ -36,18 +61,10 @@ export function ChatInput({ onSendMessage, onGenerateImage, disabled }: ChatInpu
   };
 
   const handleVoiceToggle = () => {
-    if (voiceState === "idle") {
-      setVoiceState("listening");
-      console.log("Voice listening started");
-      setTimeout(() => {
-        setVoiceState("processing");
-        setTimeout(() => {
-          setMessage("Sample voice input");
-          setVoiceState("idle");
-        }, 1000);
-      }, 2000);
+    if (isListening) {
+      stopListening();
     } else {
-      setVoiceState("idle");
+      startListening();
     }
   };
 
@@ -75,7 +92,7 @@ export function ChatInput({ onSendMessage, onGenerateImage, disabled }: ChatInpu
           />
         </div>
 
-        <VoiceButton state={voiceState} onToggle={handleVoiceToggle} />
+        <VoiceButton state={effectiveVoiceState} onToggle={handleVoiceToggle} />
 
         <Button
           size="icon"
