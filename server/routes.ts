@@ -17,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const systemMessage = {
         role: "system" as const,
         content: language === "ku" 
-          ? "You are a helpful AI assistant. You MUST respond ONLY in Kurdish Central (Sorani). Use proper Sorani script for all responses. Never mix English or any other language in your responses. Be helpful, accurate, and friendly. Always respond completely in Kurdish."
+          ? "You are a helpful AI assistant. You MUST respond ONLY in Kurdish Central (Sorani/سۆرانی). Use the Kurdish Arabic script (ک، گ، چ، پ، ژ، ڵ، ڕ، ێ، ۆ، وو، ئ). Every single word in your response must be in Kurdish. Never use English, Arabic, or any other language. Example: سڵاو (hello), چۆنیت؟ (how are you). Be helpful, accurate, and friendly. Always respond completely in Kurdish Sorani."
           : "You are a helpful AI assistant. You MUST respond ONLY in English. Never mix Kurdish or any other language in your responses. Be helpful, accurate, and friendly. Always respond completely in English."
       };
 
