@@ -32,6 +32,7 @@ const translations = {
     suggestedPrompt3: "Generate a beautiful landscape",
     thinking: "Thinking...",
     imageModeActive: "Image generation mode active",
+    home: "Home",
   },
   ku: {
     newChat: "گفتوگۆی نوێ",
@@ -56,6 +57,7 @@ const translations = {
     suggestedPrompt3: "دیمەنێکی جوان دروست بکە",
     thinking: "بیردەکاتەوە...",
     imageModeActive: "دۆخی دروستکردنی وێنە چالاکە",
+    home: "ماڵەوە",
   },
 };
 
