@@ -13,12 +13,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Messages array is required" });
       }
 
-      // Add system message for Kurdish support
+      // Add system message for language-specific responses
       const systemMessage = {
         role: "system" as const,
         content: language === "ku" 
-          ? "You are a helpful AI assistant that can communicate fluently in Kurdish Central (Sorani) and English. When responding in Kurdish, use proper Sorani script. Be helpful, accurate, and friendly."
-          : "You are a helpful AI assistant that can communicate fluently in Kurdish Central (Sorani) and English. Be helpful, accurate, and friendly."
+          ? "You are a helpful AI assistant. You MUST respond ONLY in Kurdish Central (Sorani). Use proper Sorani script for all responses. Never mix English or any other language in your responses. Be helpful, accurate, and friendly. Always respond completely in Kurdish."
+          : "You are a helpful AI assistant. You MUST respond ONLY in English. Never mix Kurdish or any other language in your responses. Be helpful, accurate, and friendly. Always respond completely in English."
       };
 
       const fullMessages = [systemMessage, ...messages];
