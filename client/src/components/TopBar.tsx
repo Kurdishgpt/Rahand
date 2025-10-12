@@ -3,26 +3,28 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Moon, Sun, Home } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Link } from "wouter";
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
 
+  const handleHomeClick = () => {
+    window.location.href = "/";
+  };
+
   return (
     <header className="flex items-center justify-between p-3 border-b bg-background sticky top-0 z-10">
       <div className="flex items-center gap-2">
         <SidebarTrigger data-testid="button-sidebar-toggle" />
-        <Link href="/">
-          <Button
-            variant="ghost"
-            size="icon"
-            data-testid="button-home"
-            title={language === "en" ? "Home" : "ماڵەوە"}
-          >
-            <Home className="h-5 w-5" />
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleHomeClick}
+          data-testid="button-home"
+          title={language === "en" ? "Home" : "ماڵەوە"}
+        >
+          <Home className="h-5 w-5" />
+        </Button>
       </div>
       
       <div className="flex items-center gap-2">

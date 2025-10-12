@@ -131,56 +131,6 @@ export default function ChatPage() {
     }
   };
 
-  const handleGenerateImage = async (prompt: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: language === "en" ? `Generate image: ${prompt}` : `دروستکردنی وێنە: ${prompt}`,
-      timestamp: new Date(),
-    };
-    
-    setMessages((prev) => [...prev, userMessage]);
-    setIsGenerating(true);
-
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate image");
-      }
-
-      const { imageUrl } = await response.json();
-      
-      const imageMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: language === "en" ? "Generated image" : "وێنەی دروستکراو",
-        type: "image",
-        imageUrl,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, imageMessage]);
-    } catch (error) {
-      console.error("Image generation error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: language === "en"
-            ? "Failed to generate image. Please try again."
-            : "نەتوانرا وێنە دروست بکرێت. تکایە دووبارە هەوڵ بدەرەوە.",
-          timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -228,7 +178,6 @@ export default function ChatPage() {
       
       <ChatInput
         onSendMessage={handleSendMessage}
-        onGenerateImage={handleGenerateImage}
         disabled={isGenerating}
       />
     </div>
