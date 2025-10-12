@@ -3,10 +3,12 @@ import { ChatMessage as ChatMessageComponent, Message } from "@/components/ChatM
 import { ChatInput } from "@/components/ChatInput";
 import { EmptyState } from "@/components/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { language, t } = useLanguage();
 
   const handleSendMessage = (content: string) => {
     const userMessage: Message = {
@@ -20,10 +22,15 @@ export default function ChatPage() {
     setIsGenerating(true);
 
     setTimeout(() => {
+      const demoResponses = {
+        en: `This is a demo response to: "${content}". In the full version, this will connect to OpenAI for real AI responses in Kurdish Central and English.`,
+        ku: `ئەمە وەڵامێکی نموونەیە بۆ: "${content}". لە وەشانی تەواودا، ئەمە بە OpenAI دەبەستێتەوە بۆ وەڵامی AI ی ڕاستەقینە بە کوردی ناوەندی و ئینگلیزی.`
+      };
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `This is a demo response to: "${content}". In the full version, this will connect to OpenAI for real AI responses in Kurdish and English.`,
+        content: demoResponses[language],
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
@@ -35,7 +42,7 @@ export default function ChatPage() {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: `Generate image: ${prompt}`,
+      content: language === "en" ? `Generate image: ${prompt}` : `دروستکردنی وێنە: ${prompt}`,
       timestamp: new Date(),
     };
     
@@ -46,7 +53,7 @@ export default function ChatPage() {
       const imageMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Generated image",
+        content: language === "en" ? "Generated image" : "وێنەی دروستکراو",
         type: "image",
         imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
         timestamp: new Date(),
@@ -71,7 +78,7 @@ export default function ChatPage() {
                 message={{
                   id: "temp",
                   role: "assistant",
-                  content: "Thinking...",
+                  content: t("thinking"),
                   timestamp: new Date(),
                 }}
                 isStreaming

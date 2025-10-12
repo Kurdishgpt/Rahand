@@ -88,7 +88,7 @@ export function ChatInput({ onSendMessage, onGenerateImage, disabled }: ChatInpu
       </div>
       {isImageMode && (
         <p className="text-xs text-muted-foreground text-center mt-2">
-          {t("generateImage")} mode active
+          {t("imageModeActive")}
         </p>
       )}
     </div>

@@ -1,17 +1,32 @@
 import { MessageSquare, Mic, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "./LanguageProvider";
 
 interface EmptyStateProps {
   onSuggestedPrompt: (prompt: string) => void;
 }
 
-const suggestedPrompts = [
-  { icon: MessageSquare, text: "Tell me about Kurdish culture", textKu: "باسی کلتووری کوردی بکە" },
-  { icon: Mic, text: "How can I use voice features?", textKu: "چۆن دەتوانم تایبەتمەندی دەنگ بەکاربهێنم؟" },
-  { icon: ImageIcon, text: "Generate a beautiful landscape", textKu: "دیمەنێکی جوان دروست بکە" },
-];
-
 export function EmptyState({ onSuggestedPrompt }: EmptyStateProps) {
+  const { language, t } = useLanguage();
+
+  const suggestedPrompts = [
+    { 
+      icon: MessageSquare, 
+      text: t("suggestedPrompt1"),
+      originalText: language === "en" ? "Tell me about Kurdish culture" : "باسی کلتووری کوردی بکە"
+    },
+    { 
+      icon: Mic, 
+      text: t("suggestedPrompt2"),
+      originalText: language === "en" ? "How can I use voice features?" : "چۆن دەتوانم تایبەتمەندی دەنگ بەکاربهێنم؟"
+    },
+    { 
+      icon: ImageIcon, 
+      text: t("suggestedPrompt3"),
+      originalText: language === "en" ? "Generate a beautiful landscape" : "دیمەنێکی جوان دروست بکە"
+    },
+  ];
+
   return (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="max-w-2xl text-center space-y-6">
@@ -19,9 +34,9 @@ export function EmptyState({ onSuggestedPrompt }: EmptyStateProps) {
           <MessageSquare className="h-8 w-8 text-primary" />
         </div>
         
-        <h2 className="text-2xl font-semibold">Welcome to AI Chat</h2>
+        <h2 className="text-2xl font-semibold">{t("welcomeTitle")}</h2>
         <p className="text-muted-foreground">
-          Start a conversation in English or Kurdish, use voice commands, or generate images
+          {t("welcomeSubtitle")}
         </p>
 
         <div className="grid gap-3 mt-6">
@@ -30,13 +45,12 @@ export function EmptyState({ onSuggestedPrompt }: EmptyStateProps) {
               key={idx}
               variant="outline"
               className="justify-start gap-3 h-auto py-3 px-4"
-              onClick={() => onSuggestedPrompt(prompt.text)}
+              onClick={() => onSuggestedPrompt(prompt.originalText)}
               data-testid={`suggested-${idx}`}
             >
               <prompt.icon className="h-5 w-5 shrink-0" />
-              <div className="text-left">
+              <div className={language === "ku" ? "text-right" : "text-left"}>
                 <div className="font-medium">{prompt.text}</div>
-                <div className="text-xs text-muted-foreground">{prompt.textKu}</div>
               </div>
             </Button>
           ))}
