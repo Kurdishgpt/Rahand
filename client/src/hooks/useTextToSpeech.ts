@@ -15,16 +15,72 @@ export function useTextToSpeech({
 }: UseTextToSpeechProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     return () => {
       if (utteranceRef.current && window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
       }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
-  const speak = useCallback((text: string) => {
+  const speak = useCallback(async (text: string) => {
+    const useKurdishAPI = localStorage.getItem("useKurdishAPI") === "true";
+    
+    if (language === "ku" && useKurdishAPI) {
+      try {
+        const voice = localStorage.getItem("kurdishVoice") || "SÎDAR";
+        const speed = parseFloat(localStorage.getItem("voiceSpeed") || "0.9");
+        
+        const response = await fetch("/api/kurdish-tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text, voice, speed }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate Kurdish speech");
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        
+        audio.onplay = () => {
+          setIsSpeaking(true);
+          onStart?.();
+        };
+        
+        audio.onended = () => {
+          setIsSpeaking(false);
+          onEnd?.();
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          onError?.("Failed to play Kurdish audio");
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        await audio.play();
+      } catch (error) {
+        console.error("Kurdish TTS error:", error);
+        setIsSpeaking(false);
+        onError?.(error instanceof Error ? error.message : "Kurdish TTS failed");
+      }
+      return;
+    }
+
     if (!("speechSynthesis" in window)) {
       const errorMsg = "Text-to-speech is not supported in this browser";
       onError?.(errorMsg);
@@ -69,6 +125,11 @@ export function useTextToSpeech({
   const stop = useCallback(() => {
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
       setIsSpeaking(false);
     }
   }, []);
