@@ -37,9 +37,14 @@ export function useTextToSpeech({
     
     const langCode = language === "ku" ? "ar-SA" : "en-US";
     utterance.lang = langCode;
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    
+    const storedSpeed = localStorage.getItem("voiceSpeed");
+    const storedPitch = localStorage.getItem("voicePitch");
+    const storedVolume = localStorage.getItem("voiceVolume");
+    
+    utterance.rate = storedSpeed ? parseFloat(storedSpeed) : 0.9;
+    utterance.pitch = storedPitch ? parseFloat(storedPitch) : 1.0;
+    utterance.volume = storedVolume ? parseFloat(storedVolume) : 1.0;
 
     utterance.onstart = () => {
       setIsSpeaking(true);

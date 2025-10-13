@@ -13,14 +13,28 @@ type Language = "en" | "ku";
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [autoPlayTTS, setAutoPlayTTS] = useState(false);
+  const [autoPlayTTS, setAutoPlayTTS] = useState(() => {
+    const stored = localStorage.getItem("autoPlayTTS");
+    return stored === "true";
+  });
   const { language, t } = useLanguage();
   const lastAssistantMessageRef = useRef<string>("");
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem("autoPlayTTS");
+      setAutoPlayTTS(stored === "true");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const { isSpeaking, speak, stop } = useTextToSpeech({
     language,
     onError: (error) => {
       setAutoPlayTTS(false);
+      localStorage.setItem("autoPlayTTS", "false");
     },
   });
 
@@ -143,7 +157,9 @@ export default function ChatPage() {
               size="sm"
               variant={autoPlayTTS ? "default" : "ghost"}
               onClick={() => {
-                setAutoPlayTTS(!autoPlayTTS);
+                const newValue = !autoPlayTTS;
+                setAutoPlayTTS(newValue);
+                localStorage.setItem("autoPlayTTS", newValue.toString());
                 if (isSpeaking) {
                   stop();
                 }
