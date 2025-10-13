@@ -46,13 +46,14 @@ export function useTextToSpeech({
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+          const errorData = await response.json().catch(() => ({ error: "Unknown error", fallback: false }));
           
-          // If API is unavailable (503), fall back to browser speech
-          if (response.status === 503) {
-            console.warn("Kurdish TTS API unavailable, falling back to browser speech");
+          // If API is unavailable (503) or explicitly marked for fallback, use browser speech
+          if (response.status === 503 || errorData.fallback) {
+            console.warn(`Kurdish TTS API unavailable (${response.status}): ${errorData.error}. Falling back to browser speech synthesis.`);
             // Fall through to browser speech synthesis silently
           } else {
+            console.error(`Kurdish TTS error (${response.status}):`, errorData.error);
             throw new Error(errorData.error || "Failed to generate Kurdish speech");
           }
         } else {
