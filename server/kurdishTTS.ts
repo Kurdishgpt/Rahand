@@ -25,6 +25,13 @@ export const KURDISH_VOICES = {
 };
 
 export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<KurdishTTSResponse> {
+  // Note: External Kurdish TTS API is currently unavailable/non-functional
+  // Browser speech synthesis is used as the primary method
+  return { 
+    error: 'Using browser speech synthesis for Kurdish text-to-speech.' 
+  };
+
+  /* Disabled: External API not working (returns 405)
   const apiKey = process.env.KURDISH_TTS_API_KEY;
   
   if (!apiKey) {
@@ -72,6 +79,7 @@ export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<Ku
       error: 'Failed to connect to Kurdish TTS service. Using browser speech synthesis instead.' 
     };
   }
+  */
 }
 
 export function getAllVoices() {
