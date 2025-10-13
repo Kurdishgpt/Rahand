@@ -46,39 +46,50 @@ export function useTextToSpeech({
         });
 
         if (!response.ok) {
-          throw new Error("Failed to generate Kurdish speech");
+          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+          
+          // If API is unavailable (503), fall back to browser speech
+          if (response.status === 503) {
+            console.warn("Kurdish TTS API unavailable, falling back to browser speech");
+            onError?.("Kurdish TTS API is unavailable. Using browser speech. Disable 'Use Kurdish API' in settings to stop seeing this message.");
+            
+            // Don't return here - fall through to browser speech synthesis
+          } else {
+            throw new Error(errorData.error || "Failed to generate Kurdish speech");
+          }
+        } else {
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          
+          const audio = new Audio(audioUrl);
+          audioRef.current = audio;
+          
+          audio.onplay = () => {
+            setIsSpeaking(true);
+            onStart?.();
+          };
+          
+          audio.onended = () => {
+            setIsSpeaking(false);
+            onEnd?.();
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          audio.onerror = () => {
+            setIsSpeaking(false);
+            onError?.("Failed to play Kurdish audio");
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          await audio.play();
+          return;
         }
-
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        const audio = new Audio(audioUrl);
-        audioRef.current = audio;
-        
-        audio.onplay = () => {
-          setIsSpeaking(true);
-          onStart?.();
-        };
-        
-        audio.onended = () => {
-          setIsSpeaking(false);
-          onEnd?.();
-          URL.revokeObjectURL(audioUrl);
-        };
-        
-        audio.onerror = () => {
-          setIsSpeaking(false);
-          onError?.("Failed to play Kurdish audio");
-          URL.revokeObjectURL(audioUrl);
-        };
-        
-        await audio.play();
       } catch (error) {
         console.error("Kurdish TTS error:", error);
         setIsSpeaking(false);
         onError?.(error instanceof Error ? error.message : "Kurdish TTS failed");
+        return;
       }
-      return;
     }
 
     if (!("speechSynthesis" in window)) {

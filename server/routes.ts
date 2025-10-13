@@ -83,7 +83,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dialect: dialect || 'sorani'
       });
 
-      res.json(result);
+      // Check for error in result
+      if (result.error) {
+        return res.status(503).json({ error: result.error });
+      }
+
+      // If we have audioData, send it as blob
+      if (result.audioData) {
+        const base64Data = result.audioData.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.send(buffer);
+      } else if (result.audioUrl) {
+        // Fetch from URL and stream
+        const audioResponse = await fetch(result.audioUrl);
+        const audioBuffer = await audioResponse.arrayBuffer();
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.send(Buffer.from(audioBuffer));
+      } else {
+        res.status(500).json({ error: 'No audio data received from TTS API' });
+      }
     } catch (error) {
       console.error("Kurdish TTS error:", error);
       res.status(500).json({ error: "Failed to generate Kurdish speech" });
