@@ -120,6 +120,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get available English voices (browser-based)
+  app.get("/api/english-voices", async (req, res) => {
+    try {
+      // Common English voice names for different browsers/systems
+      const voices = {
+        male: [
+          'David', 'Daniel', 'George', 'James', 'Mark', 'Paul',
+          'Richard', 'Thomas', 'William', 'Alex', 'Bruce', 'Fred'
+        ],
+        female: [
+          'Alice', 'Samantha', 'Victoria', 'Karen', 'Susan', 'Fiona',
+          'Kate', 'Zira', 'Hazel', 'Moira', 'Tessa', 'Veena'
+        ]
+      };
+      res.json(voices);
+    } catch (error) {
+      console.error("Get English voices error:", error);
+      res.status(500).json({ error: "Failed to get English voices" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

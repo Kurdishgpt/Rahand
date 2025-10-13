@@ -13,10 +13,16 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
-const EXAMPLE_SENTENCES = [
+const KURDISH_EXAMPLES = [
   "سڵاو، چۆنی؟ من پرۆزەیەم بۆ تاقیکردنەوەی قسە.",
   "ئەم، ئەمە نموونەیەکە بۆ تاقیکردنەوەی دەنگەکەم.",
   "پێم، خۆش به‌ یێتی بینینت، چۆن یارمەتیت پێ بدەم؟",
+];
+
+const ENGLISH_EXAMPLES = [
+  "Hello, how are you? I am testing the text-to-speech feature.",
+  "This is an example sentence to test the voice quality.",
+  "Nice to meet you, how can I help you today?",
 ];
 
 type GenderFilter = "all" | "male" | "female";
@@ -63,8 +69,8 @@ export default function VoiceSettings() {
   const [selectedExample, setSelectedExample] = useState("");
 
   const { data: voices } = useQuery<{ male: string[], female: string[] }>({
-    queryKey: ['/api/kurdish-voices'],
-    enabled: useKurdishAPI,
+    queryKey: language === "ku" ? ['/api/kurdish-voices'] : ['/api/english-voices'],
+    enabled: language === "ku" ? useKurdishAPI : true,
   });
 
   const { isSpeaking, speak, stop } = useTextToSpeech({
@@ -173,15 +179,19 @@ export default function VoiceSettings() {
           </div>
         </div>
 
-        {language === "ku" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("kurdishVoiceAPI")}</CardTitle>
-              <CardDescription>
-                {t("useKurdishAPIDescription")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {language === "en" ? "Voice Selection" : "هەڵبژاردنی دەنگ"}
+            </CardTitle>
+            <CardDescription>
+              {language === "en" 
+                ? "Choose a voice and test text-to-speech" 
+                : "دەنگێک هەڵبژێرە و دەنگی دەق تاقی بکەرەوە"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {language === "ku" && (
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="use-kurdish-api" className="text-base">
@@ -198,126 +208,130 @@ export default function VoiceSettings() {
                   data-testid="switch-kurdish-api"
                 />
               </div>
+            )}
 
-              {useKurdishAPI && voices && (
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <Label className="text-base">
-                      {language === "en" ? "Select Voice:" : "هەڵبژاردنی دەنگ:"}
-                    </Label>
-                    
-                    <div className="flex gap-2 flex-wrap">
-                      <Button
-                        variant={genderFilter === "all" ? "default" : "outline"}
-                        onClick={() => setGenderFilter("all")}
-                        data-testid="button-gender-all"
-                        className="min-w-[120px]"
-                      >
-                        {language === "en" ? "All" : "هەموو"} ({voices.male.length + voices.female.length})
-                      </Button>
-                      <Button
-                        variant={genderFilter === "male" ? "default" : "outline"}
-                        onClick={() => setGenderFilter("male")}
-                        data-testid="button-gender-male"
-                        className="min-w-[120px]"
-                      >
-                        {language === "en" ? "Male" : "نێر"} ({voices.male.length})
-                      </Button>
-                      <Button
-                        variant={genderFilter === "female" ? "default" : "outline"}
-                        onClick={() => setGenderFilter("female")}
-                        data-testid="button-gender-female"
-                        className="min-w-[120px]"
-                      >
-                        {language === "en" ? "Female" : "مێ"} ({voices.female.length})
-                      </Button>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[300px] overflow-y-auto p-2 border rounded-md">
-                      {getFilteredVoices().map((voice) => (
+            {((language === "ku" && useKurdishAPI && voices) || language === "en") && (
+              <div className="space-y-6">
+                {voices && (
+                  <>
+                    <div className="space-y-4">
+                      <Label className="text-base">
+                        {language === "en" ? "Select Voice:" : "هەڵبژاردنی دەنگ:"}
+                      </Label>
+                      
+                      <div className="flex gap-2 flex-wrap">
                         <Button
-                          key={voice.name}
-                          variant={selectedVoice === voice.name ? "default" : "outline"}
-                          onClick={() => handleVoiceChange(voice.name)}
-                          data-testid={`button-voice-${voice.name}`}
-                          className={cn(
-                            "text-sm font-medium",
-                            selectedVoice === voice.name && "ring-2 ring-primary"
-                          )}
+                          variant={genderFilter === "all" ? "default" : "outline"}
+                          onClick={() => setGenderFilter("all")}
+                          data-testid="button-gender-all"
+                          className="min-w-[120px]"
                         >
-                          {voice.name}
+                          {language === "en" ? "All" : "هەموو"} ({voices.male.length + voices.female.length})
                         </Button>
-                      ))}
-                    </div>
-                  </div>
+                        <Button
+                          variant={genderFilter === "male" ? "default" : "outline"}
+                          onClick={() => setGenderFilter("male")}
+                          data-testid="button-gender-male"
+                          className="min-w-[120px]"
+                        >
+                          {language === "en" ? "Male" : "نێر"} ({voices.male.length})
+                        </Button>
+                        <Button
+                          variant={genderFilter === "female" ? "default" : "outline"}
+                          onClick={() => setGenderFilter("female")}
+                          data-testid="button-gender-female"
+                          className="min-w-[120px]"
+                        >
+                          {language === "en" ? "Female" : "مێ"} ({voices.female.length})
+                        </Button>
+                      </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-base">
-                      {language === "en" ? "Enter Kurdish Text:" : "دەقی کوردی بنووسە:"}
-                    </Label>
-                    <div className="relative">
-                      <Textarea
-                        value={customText}
-                        onChange={(e) => setCustomText(e.target.value)}
-                        placeholder={language === "en" 
-                          ? "Type Kurdish text here to test the voice..." 
-                          : "دەقی کوردی لێرە بنووسە بۆ تاقیکردنەوەی دەنگ..."}
-                        rows={4}
-                        maxLength={150}
-                        data-testid="textarea-custom-text"
-                        className="resize-none"
-                      />
-                      <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
-                        {customText.length}/150
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[300px] overflow-y-auto p-2 border rounded-md">
+                        {getFilteredVoices().map((voice) => (
+                          <Button
+                            key={voice.name}
+                            variant={selectedVoice === voice.name ? "default" : "outline"}
+                            onClick={() => handleVoiceChange(voice.name)}
+                            data-testid={`button-voice-${voice.name}`}
+                            className={cn(
+                              "text-sm font-medium",
+                              selectedVoice === voice.name && "ring-2 ring-primary"
+                            )}
+                          >
+                            {voice.name}
+                          </Button>
+                        ))}
                       </div>
                     </div>
-                  </div>
+                  </>
+                )}
 
-                  <div className="space-y-4">
-                    <Label className="text-base">
-                      {language === "en" ? "Example Sentences:" : "ڕستە نموونەییەکان:"}
-                    </Label>
-                    <Select value={selectedExample} onValueChange={handleExampleSelect}>
-                      <SelectTrigger data-testid="select-example">
-                        <SelectValue placeholder={language === "en" ? "-- Select an example --" : "-- نموونەیەک هەڵبژێرە --"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          {language === "en" ? "-- Select an example --" : "-- نموونەیەک هەڵبژێرە --"}
-                        </SelectItem>
-                        {EXAMPLE_SENTENCES.map((sentence, index) => (
-                          <SelectItem key={index} value={sentence}>
-                            {sentence.substring(0, 50)}{sentence.length > 50 ? "..." : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-4">
+                  <Label className="text-base">
+                    {language === "en" ? "Enter Text:" : "دەقی کوردی بنووسە:"}
+                  </Label>
+                  <div className="relative">
+                    <Textarea
+                      value={customText}
+                      onChange={(e) => setCustomText(e.target.value)}
+                      placeholder={language === "en" 
+                        ? "Type text here to test the voice..." 
+                        : "دەقی کوردی لێرە بنووسە بۆ تاقیکردنەوەی دەنگ..."}
+                      rows={4}
+                      maxLength={150}
+                      data-testid="textarea-custom-text"
+                      className="resize-none"
+                    />
+                    <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                      {customText.length}/150
+                    </div>
                   </div>
-
-                  <Button
-                    onClick={handleGenerateSpeech}
-                    variant={isSpeaking ? "destructive" : "default"}
-                    className="w-full"
-                    data-testid="button-generate-speech"
-                    disabled={!customText.trim() && !selectedExample}
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <VolumeX className="h-4 w-4 mr-2" />
-                        {language === "en" ? "Stop Speech" : "وەستاندنی دەنگ"}
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="h-4 w-4 mr-2" />
-                        {language === "en" ? "Generate Speech" : "دروستکردنی دەنگ"}
-                      </>
-                    )}
-                  </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+
+                <div className="space-y-4">
+                  <Label className="text-base">
+                    {language === "en" ? "Example Sentences:" : "ڕستە نموونەییەکان:"}
+                  </Label>
+                  <Select value={selectedExample} onValueChange={handleExampleSelect}>
+                    <SelectTrigger data-testid="select-example">
+                      <SelectValue placeholder={language === "en" ? "-- Select an example --" : "-- نموونەیەک هەڵبژێرە --"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">
+                        {language === "en" ? "-- Select an example --" : "-- نموونەیەک هەڵبژێرە --"}
+                      </SelectItem>
+                      {(language === "en" ? ENGLISH_EXAMPLES : KURDISH_EXAMPLES).map((sentence, index) => (
+                        <SelectItem key={index} value={sentence}>
+                          {sentence.substring(0, 50)}{sentence.length > 50 ? "..." : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button
+                  onClick={handleGenerateSpeech}
+                  variant={isSpeaking ? "destructive" : "default"}
+                  className="w-full"
+                  data-testid="button-generate-speech"
+                  disabled={!customText.trim() && !selectedExample}
+                >
+                  {isSpeaking ? (
+                    <>
+                      <VolumeX className="h-4 w-4 mr-2" />
+                      {language === "en" ? "Stop Speech" : "وەستاندنی دەنگ"}
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="h-4 w-4 mr-2" />
+                      {language === "en" ? "Generate Speech" : "دروستکردنی دەنگ"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
