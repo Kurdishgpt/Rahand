@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/components/LanguageProvider";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBar } from "@/components/TopBar";
 import ChatPage from "@/pages/ChatPage";
+import VoiceSettings from "@/pages/VoiceSettings";
 import { useState } from "react";
 
 interface Conversation {
@@ -21,6 +22,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={ChatPage} />
+      <Route path="/voice-settings" component={VoiceSettings} />
       <Route path="*">
         <div className="flex items-center justify-center h-screen">
           <h1 className="text-2xl">404 - Page Not Found</h1>
