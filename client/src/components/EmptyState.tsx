@@ -15,11 +15,6 @@ export function EmptyState({ onSuggestedPrompt }: EmptyStateProps) {
       text: t("suggestedPrompt1"),
       originalText: language === "en" ? "Tell me about Kurdish culture" : "باسی کلتووری کوردی بکە"
     },
-    { 
-      icon: Mic, 
-      text: t("suggestedPrompt2"),
-      originalText: language === "en" ? "How can I use voice features?" : "چۆن دەتوانم تایبەتمەندی دەنگ بەکاربهێنم؟"
-    },
   ];
 
   return (
