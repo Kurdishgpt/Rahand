@@ -51,9 +51,7 @@ export function useTextToSpeech({
           // If API is unavailable (503), fall back to browser speech
           if (response.status === 503) {
             console.warn("Kurdish TTS API unavailable, falling back to browser speech");
-            onError?.("Kurdish TTS API is unavailable. Using browser speech. Disable 'Use Kurdish API' in settings to stop seeing this message.");
-            
-            // Don't return here - fall through to browser speech synthesis
+            // Fall through to browser speech synthesis silently
           } else {
             throw new Error(errorData.error || "Failed to generate Kurdish speech");
           }
