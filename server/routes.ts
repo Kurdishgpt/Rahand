@@ -68,13 +68,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Kurdish TTS endpoint
+  app.options("/api/kurdish-tts", (req, res) => {
+    res.status(200).end();
+  });
+
   app.post("/api/kurdish-tts", async (req, res) => {
     try {
       const { text, voice, speed, dialect } = req.body;
 
       if (!text || typeof text !== "string") {
+        console.error("Kurdish TTS: Missing or invalid text parameter");
         return res.status(400).json({ error: "Text is required" });
       }
+
+      console.log(`Kurdish TTS request: text="${text.substring(0, 50)}...", voice=${voice || 'SÎDAR'}, dialect=${dialect || 'sorani'}`);
 
       const result = await generateKurdishTTS({
         text,
@@ -85,7 +92,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for error in result
       if (result.error) {
-        return res.status(503).json({ error: result.error });
+        console.warn(`Kurdish TTS API error: ${result.error}`);
+        return res.status(503).json({ 
+          error: result.error,
+          fallback: true
+        });
       }
 
       // If we have audioData, send it as blob
@@ -93,19 +104,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const base64Data = result.audioData.split(',')[1];
         const buffer = Buffer.from(base64Data, 'base64');
         res.setHeader('Content-Type', 'audio/mpeg');
-        res.send(buffer);
+        res.setHeader('Content-Length', buffer.length.toString());
+        console.log(`Kurdish TTS: Sending audio data (${buffer.length} bytes)`);
+        return res.send(buffer);
       } else if (result.audioUrl) {
         // Fetch from URL and stream
+        console.log(`Kurdish TTS: Fetching audio from URL: ${result.audioUrl}`);
         const audioResponse = await fetch(result.audioUrl);
+        
+        if (!audioResponse.ok) {
+          console.error(`Kurdish TTS: Failed to fetch audio from URL (${audioResponse.status})`);
+          return res.status(503).json({ 
+            error: 'Failed to fetch audio from TTS service',
+            fallback: true
+          });
+        }
+        
         const audioBuffer = await audioResponse.arrayBuffer();
         res.setHeader('Content-Type', 'audio/mpeg');
-        res.send(Buffer.from(audioBuffer));
+        res.setHeader('Content-Length', audioBuffer.byteLength.toString());
+        console.log(`Kurdish TTS: Sending audio from URL (${audioBuffer.byteLength} bytes)`);
+        return res.send(Buffer.from(audioBuffer));
       } else {
-        res.status(500).json({ error: 'No audio data received from TTS API' });
+        console.error("Kurdish TTS: No audio data or URL received");
+        return res.status(500).json({ error: 'No audio data received from TTS API' });
       }
     } catch (error) {
-      console.error("Kurdish TTS error:", error);
-      res.status(500).json({ error: "Failed to generate Kurdish speech" });
+      console.error("Kurdish TTS endpoint error:", error);
+      return res.status(500).json({ error: "Failed to generate Kurdish speech" });
     }
   });
 
