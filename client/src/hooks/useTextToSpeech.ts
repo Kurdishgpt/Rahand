@@ -30,10 +30,8 @@ export function useTextToSpeech({
   }, []);
 
   const speak = useCallback(async (text: string) => {
-    // Kurdish TTS API is disabled - always use browser speech synthesis
-    // const useKurdishAPI = localStorage.getItem("useKurdishAPI") === "true";
+    const useKurdishAPI = localStorage.getItem("useKurdishAPI") === "true";
     
-    /* Kurdish API disabled until valid service is available
     if (language === "ku" && useKurdishAPI) {
       try {
         const voice = localStorage.getItem("kurdishVoice") || "SÎDAR";
@@ -93,7 +91,6 @@ export function useTextToSpeech({
         return;
       }
     }
-    */
 
     if (!("speechSynthesis" in window)) {
       const errorMsg = "Text-to-speech is not supported in this browser";

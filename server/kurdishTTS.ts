@@ -11,31 +11,23 @@ interface KurdishTTSResponse {
   error?: string;
 }
 
-// Kurdish TTS voices available (based on kurdishtts.com)
+// Kurdish TTS FREE voices available from kurdishtts.com (only free tier voices)
 export const KURDISH_VOICES = {
   male: [
     'SÎDAR', 'RÊBAZ', 'ŞAH', 'OMÎRZA', 'SERDAR', 'SÎRWAN', 'ÇEKDAR', 'RÊWAN',
-    'TÎGRAN', 'VEJÎN', 'ZANA', 'BARAN', 'HAWAR', 'NEBEZ', 'ZANA', 'SERDAR',
-    'ÇEKDAR', 'MÎRZA', 'RÊBAZ', 'ŞAHO', 'BAWER', 'ROJAN', 'ÇEKO', 'DÎYAR',
-    'KOVAN', 'MÎRZA', 'NÎJAD', 'HAWAR', 'JÎWAN', 'LÎRAN', 'MÎRZA', 'NÛHAT',
-    'PÎROZ', 'RÊZAN', 'ŞÊRVAN', 'ARGEŞ', 'KOVAN', 'MÎRZA'
+    'TÎGRAN', 'VEJÎN', 'ZANA', 'BARAN', 'HAWAR', 'NEBEZ', 'ŞAHO', 'BAWER',
+    'ROJAN', 'ÇEKO', 'DÎYAR', 'KOVAN', 'MÎRZA', 'NÎJAD', 'JÎWAN', 'LÎRAN',
+    'NÛHAT', 'PÎROZ', 'RÊZAN', 'ŞÊRVAN', 'ARGEŞ'
   ],
   female: [
     'ARA', 'BERFÎN', 'DÎLAN', 'EVAR', 'HÊVÎ', 'JÎYAN', 'NÎGAR', 'RONAK',
     'ŞÎLAN', 'ZÎLAN', 'AVAN', 'BÊRÎVAN', 'CÎHAN', 'DELAL', 'ÊVAR', 'GONA',
-    'HÊLÎN', 'JÎNDA', 'KOVAN', 'LAVA', 'MÎNA', 'NAVÎN', 'PÊŞENG', 'ROZA',
+    'HÊLÎN', 'JÎNDA', 'LAVA', 'MÎNA', 'NAVÎN', 'PÊŞENG', 'ROZA',
     'SÎPAN', 'TARA', 'VÎYAN'
   ]
 };
 
 export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<KurdishTTSResponse> {
-  // Kurdish TTS API is currently not available - the service endpoints are not configured
-  // This feature is disabled until a valid Kurdish TTS service is integrated
-  return { 
-    error: 'Kurdish TTS API is not currently available. Please use the browser\'s built-in speech instead by disabling "Use Kurdish API" in settings.' 
-  };
-  
-  /* Disabled until valid API endpoints are configured
   const apiKey = process.env.KURDISH_TTS_API_KEY;
   
   if (!apiKey) {
@@ -45,11 +37,13 @@ export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<Ku
   }
 
   try {
-    // Try multiple potential API endpoints for Kurdish TTS
+    // Try multiple potential API endpoints for KurdishTTS.com
     const apiEndpoints = [
       'https://api.kurdishtts.com/v1/synthesize',
+      'https://api.kurdishtts.com/v1/tts',
       'https://api.kurdishtts.com/api/tts',
       'https://kurdishtts.com/api/v1/tts',
+      'https://kurdishtts.com/api/synthesize',
     ];
 
     let lastError: Error | null = null;
@@ -61,16 +55,13 @@ export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<Ku
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${apiKey}`,
-            'X-API-Key': apiKey, // Some APIs use this header instead
+            'X-API-Key': apiKey,
           },
           body: JSON.stringify({
             text: request.text,
             voice: request.voice,
-            speaker: request.voice, // Some APIs use 'speaker' instead of 'voice'
             speed: request.speed || 1.0,
-            rate: request.speed || 1.0, // Some APIs use 'rate' instead of 'speed'
             dialect: request.dialect || 'sorani',
-            language: 'ku',
           }),
         });
 
@@ -91,7 +82,7 @@ export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<Ku
           }
         }
 
-        lastError = new Error(`API returned ${response.status}`);
+        lastError = new Error(`API returned ${response.status}: ${response.statusText}`);
       } catch (err) {
         lastError = err as Error;
         continue; // Try next endpoint
@@ -109,7 +100,6 @@ export async function generateKurdishTTS(request: KurdishTTSRequest): Promise<Ku
       error: 'Failed to connect to Kurdish TTS service. Please try again later or use browser speech synthesis.' 
     };
   }
-  */
 }
 
 export function getAllVoices() {

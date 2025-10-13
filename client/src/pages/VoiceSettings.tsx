@@ -198,7 +198,7 @@ export default function VoiceSettings() {
                     {t("useKurdishAPI")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    ئێستا API کوردی بەردەست نییە. تکایە دەنگی وێبگەڕەکە بەکاربێنە.
+                    بەکارهێنانی دەنگە بەرزەکانی کوردی لە kurdishtts.com (خۆڕایی)
                   </p>
                 </div>
                 <Switch
@@ -206,7 +206,6 @@ export default function VoiceSettings() {
                   checked={useKurdishAPI}
                   onCheckedChange={handleUseKurdishAPIToggle}
                   data-testid="switch-kurdish-api"
-                  disabled={true}
                 />
               </div>
             )}
