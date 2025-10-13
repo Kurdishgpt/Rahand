@@ -192,19 +192,18 @@ export default function VoiceSettings() {
           </CardHeader>
           <CardContent className="space-y-6">
             {language === "ku" && (
-              <div className="flex items-center justify-between opacity-50">
+              <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="use-kurdish-api" className="text-base">
                     {t("useKurdishAPI")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    API ی کوردی بەردەست نییە. دەنگی وێبگەڕ بەکاردێت
+                    بەکارهێنانی دەنگە بەرزەکانی کوردی لە KurdishTTS.com
                   </p>
                 </div>
                 <Switch
                   id="use-kurdish-api"
-                  checked={false}
-                  disabled={true}
+                  checked={useKurdishAPI}
                   onCheckedChange={handleUseKurdishAPIToggle}
                   data-testid="switch-kurdish-api"
                 />
