@@ -30,6 +30,49 @@ export function useTextToSpeech({
   }, []);
 
   const speak = useCallback(async (text: string) => {
+    // Helper function for browser speech synthesis
+    const useBrowserSpeech = () => {
+      if (!("speechSynthesis" in window)) {
+        const errorMsg = "Text-to-speech is not supported in this browser";
+        onError?.(errorMsg);
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      const langCode = language === "ku" ? "ar-SA" : "en-US";
+      utterance.lang = langCode;
+      
+      const storedSpeed = localStorage.getItem("voiceSpeed");
+      const storedPitch = localStorage.getItem("voicePitch");
+      const storedVolume = localStorage.getItem("voiceVolume");
+      
+      utterance.rate = storedSpeed ? parseFloat(storedSpeed) : 0.9;
+      utterance.pitch = storedPitch ? parseFloat(storedPitch) : 1.0;
+      utterance.volume = storedVolume ? parseFloat(storedVolume) : 1.0;
+
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        onStart?.();
+      };
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        onEnd?.();
+      };
+
+      utterance.onerror = (event) => {
+        console.error("Speech synthesis error:", event);
+        setIsSpeaking(false);
+        onError?.(event.error);
+      };
+
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    };
+
     const useKurdishAPI = localStorage.getItem("useKurdishAPI") === "true";
     
     if (language === "ku" && useKurdishAPI) {
@@ -75,9 +118,9 @@ export function useTextToSpeech({
           };
           
           audio.onerror = () => {
-            setIsSpeaking(false);
-            onError?.("Failed to play Kurdish audio");
+            console.warn("Kurdish audio playback failed, falling back to browser speech synthesis");
             URL.revokeObjectURL(audioUrl);
+            useBrowserSpeech();
           };
           
           await audio.play();
@@ -85,51 +128,13 @@ export function useTextToSpeech({
         }
       } catch (error) {
         console.error("Kurdish TTS error:", error);
-        setIsSpeaking(false);
-        onError?.(error instanceof Error ? error.message : "Kurdish TTS failed");
-        return;
+        console.warn("Kurdish TTS failed, falling back to browser speech synthesis");
+        // Don't return early - fall through to browser speech synthesis
       }
     }
 
-    if (!("speechSynthesis" in window)) {
-      const errorMsg = "Text-to-speech is not supported in this browser";
-      onError?.(errorMsg);
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    const langCode = language === "ku" ? "ar-SA" : "en-US";
-    utterance.lang = langCode;
-    
-    const storedSpeed = localStorage.getItem("voiceSpeed");
-    const storedPitch = localStorage.getItem("voicePitch");
-    const storedVolume = localStorage.getItem("voiceVolume");
-    
-    utterance.rate = storedSpeed ? parseFloat(storedSpeed) : 0.9;
-    utterance.pitch = storedPitch ? parseFloat(storedPitch) : 1.0;
-    utterance.volume = storedVolume ? parseFloat(storedVolume) : 1.0;
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      onStart?.();
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      onEnd?.();
-    };
-
-    utterance.onerror = (event) => {
-      console.error("Speech synthesis error:", event);
-      setIsSpeaking(false);
-      onError?.(event.error);
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    // Use browser speech synthesis as fallback or default
+    useBrowserSpeech();
   }, [language, onStart, onEnd, onError]);
 
   const stop = useCallback(() => {

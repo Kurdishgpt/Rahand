@@ -127,11 +127,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.send(Buffer.from(audioBuffer));
       } else {
         console.error("Kurdish TTS: No audio data or URL received");
-        return res.status(500).json({ error: 'No audio data received from TTS API' });
+        return res.status(503).json({ 
+          error: 'No audio data received from TTS API',
+          fallback: true
+        });
       }
     } catch (error) {
       console.error("Kurdish TTS endpoint error:", error);
-      return res.status(500).json({ error: "Failed to generate Kurdish speech" });
+      return res.status(503).json({ 
+        error: "Failed to generate Kurdish speech",
+        fallback: true
+      });
     }
   });
 
