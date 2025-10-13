@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Moon, Sun, Home } from "lucide-react";
+import { Moon, Sun, Home, Volume2 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useLanguage } from "@/hooks/useLanguage";
+import { Link } from "wouter";
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();
-  const { language, toggleLanguage } = useLanguage();
+  const { language, toggleLanguage, t } = useLanguage();
 
   const handleHomeClick = () => {
     window.location.href = "/";
@@ -45,6 +46,17 @@ export function TopBar() {
         >
           کوردی
         </Button>
+
+        <Link href="/voice-settings">
+          <Button
+            variant="ghost"
+            size="icon"
+            data-testid="button-voice-settings"
+            title={t("voiceSettings")}
+          >
+            <Volume2 className="h-5 w-5" />
+          </Button>
+        </Link>
         
         <Button
           variant="ghost"
