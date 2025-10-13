@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { streamChatCompletion, generateImage, getChatCompletion } from "./openai";
+import { generateKurdishTTS, getAllVoices } from "./kurdishTTS";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Chat completion endpoint with streaming
@@ -63,6 +64,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Image generation error:", error);
       res.status(500).json({ error: "Failed to generate image" });
+    }
+  });
+
+  // Kurdish TTS endpoint
+  app.post("/api/kurdish-tts", async (req, res) => {
+    try {
+      const { text, voice, speed, dialect } = req.body;
+
+      if (!text || typeof text !== "string") {
+        return res.status(400).json({ error: "Text is required" });
+      }
+
+      const result = await generateKurdishTTS({
+        text,
+        voice: voice || 'SÎDAR',
+        speed: speed || 1.0,
+        dialect: dialect || 'sorani'
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Kurdish TTS error:", error);
+      res.status(500).json({ error: "Failed to generate Kurdish speech" });
+    }
+  });
+
+  // Get available Kurdish voices
+  app.get("/api/kurdish-voices", async (req, res) => {
+    try {
+      const voices = getAllVoices();
+      res.json(voices);
+    } catch (error) {
+      console.error("Get voices error:", error);
+      res.status(500).json({ error: "Failed to get voices" });
     }
   });
 

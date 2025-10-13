@@ -18,10 +18,20 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
 
+  const autoSendVoice = localStorage.getItem("autoSendVoice") === "true";
+
   const { isListening, startListening, stopListening } = useSpeechRecognition({
     language,
     onResult: (transcript) => {
       setMessage(transcript);
+      
+      if (autoSendVoice && transcript.trim()) {
+        setTimeout(() => {
+          onSendMessage(transcript.trim());
+          setMessage("");
+        }, 500);
+      }
+      
       toast({
         description: language === "en" 
           ? `Recognized: ${transcript}` 
